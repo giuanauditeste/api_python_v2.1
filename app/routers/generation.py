@@ -37,7 +37,8 @@ async def generate(request: RequestSchema, db: Session = Depends(get_db)):
             status=Status.PENDING.value,
             project_id=None,
             artifact_type=None,
-            artifact_id=None
+            artifact_id=None,
+            platform=request.platform
         )
         db.add(db_request)
         db.commit()
@@ -56,7 +57,8 @@ async def generate(request: RequestSchema, db: Session = Depends(get_db)):
             "language": request.language,
             "work_item_id": request.work_item_id,  # <-- Passando para a task
             "parent_board_id": request.parent_board_id,
-            "type_test": request.type_test
+            "type_test": request.type_test,
+            "platform": request.platform
         }
 
         # Enviar a task para o Celery
@@ -100,7 +102,8 @@ async def get_status(request_id: str, db: Session = Depends(get_db)):
         task_type=request.task_type,
         status=request.status,
         created_at=request.created_at,
-        processed_at=request.processed_at
+        processed_at=request.processed_at,
+        platform=request.platform
     )
 
 
@@ -137,6 +140,10 @@ async def reprocess(
             detail=f"Artefato {artifact_type} com ID {artifact_id} não encontrado"
         )
 
+    # Validar que o platform do reprocessamento é igual ao do artefato
+    if existing_artifact.platform and existing_artifact.platform != request.platform:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="O valor de platform não pode ser alterado no reprocessamento.")
+
     # Determinar o parent_id com base no tipo de artefato
     if task_type_enum == TaskType.EPIC:
         parent_id = existing_artifact.team_project_id
@@ -160,7 +167,8 @@ async def reprocess(
             status=Status.PENDING.value,
             parent=str(parent_id) if parent_id is not None else None,  # Corrigido
             artifact_type=artifact_type,
-            artifact_id=artifact_id
+            artifact_id=artifact_id,
+            platform=request.platform
         )
         db.add(db_request)
         db.commit()
@@ -183,7 +191,8 @@ async def reprocess(
         "language": request.language,
         "work_item_id": request.work_item_id,
         "parent_board_id": request.parent_board_id,
-        "type_test": request.type_test
+        "type_test": request.type_test,
+        "platform": request.platform
     }
 
     try:
@@ -222,7 +231,8 @@ async def create_independent(request: IndependentCreationRequest, db: Session = 
             task_type=request.task_type.value,
             status=Status.PENDING.value,
             artifact_type=None,
-            artifact_id=None
+            artifact_id=None,
+            platform=request.platform
         )
         db.add(db_request)
         db.commit()
@@ -253,7 +263,8 @@ async def create_independent(request: IndependentCreationRequest, db: Session = 
         "language": request.language,
         "work_item_id": request.work_item_id,
         "parent_board_id": request.parent_board_id,
-        "type_test": request.type_test
+        "type_test": request.type_test,
+        "platform": request.platform
     }
 
     # Enviar a nova task para o Celery

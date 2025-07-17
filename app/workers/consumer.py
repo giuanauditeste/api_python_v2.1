@@ -109,7 +109,8 @@ def process_message_task(
     llm_config: Optional[Dict[str, Any]] = None,
     work_item_id: Optional[str] = None,
     parent_board_id: Optional[str] = None,
-    type_test: Optional[str] = None
+    type_test: Optional[str] = None,
+    platform: str = None
 ):
     creator = None
     try:
@@ -127,7 +128,8 @@ def process_message_task(
             parent_board_id=parent_board_id,
             type_test=type_test,
             project_id_str=None, # Rota original não passa project_id
-            artifact_id=None
+            artifact_id=None,
+            platform=platform
         )
         logger.info(f"[Task process_demand_task] Concluída (lógica interna define status) para ReqID {request_id_interno}")
     except Exception as task_exc:
@@ -148,7 +150,8 @@ def reprocess_work_item_task(
     llm_config: Optional[Dict[str, Any]] = None,
     work_item_id: Optional[str] = None,
     parent_board_id: Optional[str] = None,
-    type_test: Optional[str] = None
+    type_test: Optional[str] = None,
+    platform: str = None
 ):
     reprocessor = None
     try:
@@ -165,7 +168,8 @@ def reprocess_work_item_task(
             type_test=type_test,
             artifact_id=artifact_id,
             project_id_str=None,
-            parent_type_str=None
+            parent_type_str=None,
+            platform=platform
         )
         logger.info(f"[Task reprocess_work_item_task] Concluída (lógica interna define status) para ReqID {request_id_interno}")
     except Exception as task_exc:
@@ -186,7 +190,8 @@ def process_independent_creation_task(
     llm_config: Optional[Dict[str, Any]] = None,
     work_item_id: Optional[str] = None,
     parent_board_id: Optional[str] = None,
-    type_test: Optional[str] = None
+    type_test: Optional[str] = None,
+    platform: str = None
 ):
     creator = None
     try:
@@ -206,7 +211,8 @@ def process_independent_creation_task(
             work_item_id=work_item_id,
             parent_board_id=parent_board_id,
             type_test=type_test,
-            artifact_id=None # Não é reprocessamento
+            artifact_id=None, # Não é reprocessamento
+            platform=platform
         )
         logger.info(f"[Task process_independent_creation_task] Concluída (lógica interna define status) para ReqID {request_id_interno}")
     except Exception as task_exc:
